@@ -1,0 +1,37 @@
+Project Goal: Build a recursive panel app for Windows (Web) and Mobile (Android/iOS).
+
+Architecture:
+
+Use Expo (React Native Web) and PocketBase.
+
+The backend is at http://127.0.0.1:8090. Create a lib/pocketbase.ts client.
+
+The Core Logic: Create a FolderView component.
+
+It should fetch all records from the nodes collection where parent matches the current ID (or is empty for the root).
+
+If a node is a panel, display it as an icon. Clicking it should push a new FolderView to the navigation stack.
+
+If a node is text, open a full-screen text editor.
+
+Styling:
+
+Use Tailwind (NativeWind) or standard React Native Styles.
+
+Implement a responsive grid: 2 columns on mobile, 4-6 columns on Windows.
+
+Icons should change shape (Circle, Square, Hexagon) based on the style.shape field in the database.
+
+Navigation: Ensure there is a "Back" button on every sub-panel.
+
+
+
+C:\pocketbase>pocketbase.exe serve
+
+
+node.js
+npx create-expo-app@latest my-recursive-app
+npm install nativewind tailwindcss react-native-css-interop pocketbase
+
+npm install --legacy-peer-deps nativewind tailwindcss react-native-css-interop pocketbase
+npm install --legacy-peer-deps --save-dev @types/react-native
