@@ -4,29 +4,29 @@ const pb = new PocketBase('http://127.0.0.1:8090');
 
 async function seed() {
     try {
-        // Create Root Folder A
+        // Create Root Folder A - Project & Task Management
         const folderA = await pb.collection('nodes').create({
             title: 'Work',
             type: 'panel',
-            style: { shape: 'square', color: '#3b82f6' }
+            style: { icon: 'briefcase', iconGroup: 'project-task', x: 0, y: 0 }
         });
         console.log('Created Work folder:', folderA.id);
 
-        // Create Root Folder B
+        // Create Root Folder B - Personal Life & Planning
         const folderB = await pb.collection('nodes').create({
             title: 'Personal',
             type: 'panel',
-            style: { shape: 'circle', color: '#10b981' }
+            style: { icon: 'home', iconGroup: 'personal', x: 0, y: 0 }
         });
         console.log('Created Personal folder:', folderB.id);
 
-        // Child of A
+        // Child of A - Text node with task icon
         await pb.collection('nodes').create({
             title: 'Project X',
             type: 'text',
             parent: folderA.id,
             content: 'Meeting notes for Project X...',
-            style: { shape: 'hexagon', color: '#ef4444' }
+            style: { icon: 'circle', iconGroup: 'project-task', x: 0, y: 0 }
         });
         console.log('Created Project X note');
 

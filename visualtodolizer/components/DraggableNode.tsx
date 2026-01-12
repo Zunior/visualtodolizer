@@ -3,15 +3,16 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import ShapeIcon from './ShapeIcon';
+import LucideIcon from './LucideIcon';
 
 interface DraggableNodeProps {
     node: Node;
     onDragEnd: (id: string, x: number, y: number) => void;
     onPress: (node: Node) => void;
+    onLongPress: (node: Node, position: { x: number; y: number }) => void;
 }
 
-export default function DraggableNode({ node, onDragEnd, onPress }: DraggableNodeProps) {
+export default function DraggableNode({ node, onDragEnd, onPress, onLongPress }: DraggableNodeProps) {
     // Use existing coordinates or default to 0,0 (or maybe random/scattered in parent to avoid stack).
     // For now 0,0 if undefined.
     const startX = node.style?.x || 0;
@@ -25,6 +26,15 @@ export default function DraggableNode({ node, onDragEnd, onPress }: DraggableNod
         .numberOfTaps(2)
         .onEnd(() => {
             runOnJS(onPress)(node);
+        });
+
+    const longPress = Gesture.LongPress()
+        .minDuration(500)
+        .onEnd((event) => {
+            // Calculate screen position: node position + gesture position
+            const screenX = startX + event.x;
+            const screenY = startY + event.y;
+            runOnJS(onLongPress)(node, { x: screenX, y: screenY });
         });
 
     const dragGesture = Gesture.Pan()
@@ -42,7 +52,7 @@ export default function DraggableNode({ node, onDragEnd, onPress }: DraggableNod
             runOnJS(onDragEnd)(node.id, finalX, finalY);
         });
 
-    const composedGesture = Gesture.Race(dragGesture, doubleTap);
+    const composedGesture = Gesture.Race(dragGesture, doubleTap, longPress);
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
@@ -62,8 +72,12 @@ export default function DraggableNode({ node, onDragEnd, onPress }: DraggableNod
         <GestureDetector gesture={composedGesture}>
             <Animated.View style={animatedStyle}>
                 <View className="bg-white dark:bg-gray-800 p-4 rounded-xl items-center justify-center shadow-sm w-32 h-32">
-                    <ShapeIcon shape={node.style?.shape} color={node.style?.color} />
-                    <Text className="mt-2 text-center font-medium text-gray-800 dark:text-gray-200" numberOfLines={1}>
+                    <LucideIcon iconName={node.style?.icon} size={40} color="#3b82f6" />
+                    <Text 
+                        className="mt-2 font-medium text-gray-800 dark:text-gray-200" 
+                        style={{ textAlign: 'center', width: '100%' }}
+                        numberOfLines={1}
+                    >
                         {node.title}
                     </Text>
                 </View>

@@ -1,13 +1,13 @@
-import ShapeIcon from '@/components/ShapeIcon';
+import LucideIcon from '@/components/LucideIcon';
+import { ICON_GROUPS, getIconsForGroupAndType } from '@/constants/iconGroups';
 import pb from '@/lib/pocketbase';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState, useEffect } from 'react';
+import { ActivityIndicator, Alert, Dimensions, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-// Predefined colors for the picker
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#64748b'];
-const SHAPES = ['circle', 'square', 'hexagon'] as const;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ModalScreen() {
   const router = useRouter();
@@ -16,13 +16,34 @@ export default function ModalScreen() {
 
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'panel' | 'text'>('panel');
-  const [color, setColor] = useState(COLORS[4]); // Default blue
-  const [shape, setShape] = useState<'circle' | 'square' | 'hexagon'>('square');
+  const [selectedGroup, setSelectedGroup] = useState(ICON_GROUPS[0].id);
+  const [selectedIcon, setSelectedIcon] = useState<string>(() => {
+    // Initialize with first available icon
+    const initialIcons = getIconsForGroupAndType(ICON_GROUPS[0].id, 'panel');
+    return initialIcons.length > 0 ? initialIcons[0] : '';
+  });
   const [loading, setLoading] = useState(false);
+
+  // Update selected icon when group or type changes
+  useEffect(() => {
+    const icons = getIconsForGroupAndType(selectedGroup, type);
+    if (icons.length > 0) {
+      // Always set to first icon when group or type changes
+      setSelectedIcon(icons[0]);
+    } else {
+      setSelectedIcon('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedGroup, type]);
 
   const handleCreate = async () => {
     if (!title.trim()) {
       Alert.alert('Error', 'Please enter a title');
+      return;
+    }
+
+    if (!selectedIcon) {
+      Alert.alert('Error', 'Please select an icon');
       return;
     }
 
@@ -33,13 +54,13 @@ export default function ModalScreen() {
         type,
         parent: parentId === 'root' ? '' : parentId,
         style: {
-          color,
-          shape,
+          icon: selectedIcon,
+          iconGroup: selectedGroup,
           x: 0, // Default to 0,0 for now as per plan
           y: 0
         }
       });
-      router.back();
+      router.dismiss();
     } catch (e: any) {
       console.error('Error creating node:', e);
       Alert.alert('Error', e.message || 'Failed to create node');
@@ -48,77 +69,120 @@ export default function ModalScreen() {
     }
   };
 
+  const availableIcons = getIconsForGroupAndType(selectedGroup, type);
+
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          title: 'Modal',
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.dismiss()} style={{ marginLeft: 10, padding: 8 }}>
+              <Ionicons name="arrow-back" size={24} color="#334155" />
+            </TouchableOpacity>
+          ),
+        }}
+      />
       <Text style={styles.headerTitle}>Create New Node</Text>
 
-      <ScrollView style={styles.form}>
+        <ScrollView style={styles.form}>
         <Text style={styles.label}>Title</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { width: SCREEN_WIDTH * 0.5 }]}
           placeholder="Enter title..."
           value={title}
           onChangeText={setTitle}
+          multiline
           autoFocus
         />
 
         <Text style={styles.label}>Type</Text>
-        <View style={styles.row}>
+        <View style={styles.radioContainer}>
           {['panel', 'text'].map((t) => (
             <TouchableOpacity
               key={t}
-              style={[styles.typeButton, type === t && styles.typeButtonSelected]}
+              style={styles.radioOption}
               onPress={() => setType(t as any)}
             >
-              <Text style={[styles.typeText, type === t && styles.typeTextSelected]}>
+              <View style={styles.radioButton}>
+                {type === t && <View style={styles.radioButtonInner} />}
+              </View>
+              <Text style={styles.radioLabel}>
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.label}>Shape</Text>
-        <View style={styles.row}>
-          {SHAPES.map((s) => (
-            <TouchableOpacity
-              key={s}
-              onPress={() => setShape(s)}
-              style={[styles.shapeOption, shape === s && styles.selectedOption]}
-            >
-              <ShapeIcon shape={s} color={color} size={40} />
-            </TouchableOpacity>
-          ))}
+        <Text style={styles.label}>Icon</Text>
+        <View style={styles.iconSelectionContainer}>
+          {/* Left side: Icon groups list */}
+          <ScrollView style={styles.groupList} showsVerticalScrollIndicator={false}>
+            {ICON_GROUPS.map((group) => (
+              <TouchableOpacity
+                key={group.id}
+                style={[
+                  styles.groupListItem,
+                  selectedGroup === group.id && styles.groupListItemSelected
+                ]}
+                onPress={() => setSelectedGroup(group.id)}
+              >
+                <Text
+                  style={[
+                    styles.groupListText,
+                    selectedGroup === group.id && styles.groupListTextSelected
+                  ]}
+                >
+                  {group.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Right side: Icons vertical list */}
+          <ScrollView style={styles.iconsContainer} showsVerticalScrollIndicator={false}>
+            <View style={styles.iconList}>
+              {availableIcons.map((iconName) => (
+                <TouchableOpacity
+                  key={iconName}
+                  style={[
+                    styles.iconOption,
+                    selectedIcon === iconName && styles.selectedIconOption
+                  ]}
+                  onPress={() => setSelectedIcon(iconName)}
+                >
+                  <LucideIcon
+                    iconName={iconName}
+                    size={32}
+                    color={selectedIcon === iconName ? '#3b82f6' : '#64748b'}
+                  />
+                  <Text
+                    style={[
+                      styles.iconName,
+                      selectedIcon === iconName && styles.iconNameSelected
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {iconName}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
         </View>
-
-        <Text style={styles.label}>Color</Text>
-        <View style={styles.colorGrid}>
-          {COLORS.map((c) => (
-            <TouchableOpacity
-              key={c}
-              style={[
-                styles.colorOption,
-                { backgroundColor: c },
-                color === c && styles.selectedOption
-              ]}
-              onPress={() => setColor(c)}
-            />
-          ))}
-        </View>
-
-
-        <View style={styles.previewContainer}>
-          <Text style={styles.label}>Preview</Text>
-          <View style={styles.previewBox}>
-            <ShapeIcon shape={shape} color={color} size={64} />
-            <Text style={styles.previewText} numberOfLines={1}>{title || 'Title'}</Text>
-          </View>
-        </View>
-
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.createButton} onPress={handleCreate} disabled={loading}>
-          {loading ? <ActivityIndicator color="white" /> : <Text style={styles.createButtonText}>Create</Text>}
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={handleCreate}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.createButtonText}>Create</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -157,86 +221,121 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#f8fafc',
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
-  row: {
+  radioContainer: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 20,
   },
-  typeButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
+  radioOption: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
-  typeButtonSelected: {
-    backgroundColor: '#3b82f6',
+  radioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
     borderColor: '#3b82f6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  typeText: {
+  radioButtonInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#3b82f6',
+  },
+  radioLabel: {
     fontSize: 16,
-    color: '#64748b',
+    color: '#334155',
   },
-  typeTextSelected: {
+  iconSelectionContainer: {
+    flexDirection: 'row',
+    height: 300,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  groupList: {
+    alignSelf: 'flex-start',
+    borderRightWidth: 1,
+    borderRightColor: '#e2e8f0',
+    paddingRight: 12,
+    minWidth: 150,
+  },
+  groupListItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 4,
+    backgroundColor: '#f8fafc',
+    alignSelf: 'flex-start',
+  },
+  groupListItemSelected: {
+    backgroundColor: '#3b82f6',
+  },
+  groupListText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#64748b',
+    flexShrink: 0,
+  },
+  groupListTextSelected: {
     color: 'white',
     fontWeight: '600',
   },
-  colorGrid: {
+  iconsContainer: {
+    alignSelf: 'flex-start',
+    marginLeft: 12,
+    minWidth: 150,
+  },
+  iconList: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  iconOption: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  colorOption: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  shapeOption: {
-    padding: 5,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 12,
-  },
-  selectedOption: {
-    borderColor: '#334155',
     borderWidth: 2,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    gap: 12,
+    alignSelf: 'flex-start',
   },
-  previewContainer: {
-    marginTop: 20,
-    alignItems: 'center',
+  selectedIconOption: {
+    borderColor: '#3b82f6',
+    backgroundColor: '#eff6ff',
   },
-  previewBox: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    width: 150,
-    height: 150,
-    justifyContent: 'center',
-  },
-  previewText: {
-    marginTop: 10,
-    fontWeight: '500',
+  iconName: {
     fontSize: 14,
+    color: '#64748b',
+    flexShrink: 0,
+  },
+  iconNameSelected: {
+    color: '#3b82f6',
+    fontWeight: '600',
   },
   footer: {
     marginTop: 20,
+    alignItems: 'flex-start',
   },
   createButton: {
     backgroundColor: '#3b82f6',
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 100,
   },
   createButtonText: {
     color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

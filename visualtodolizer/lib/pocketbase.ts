@@ -14,8 +14,8 @@ export interface Node {
   parent: string; // Relation to another Node
   content?: string; // For text nodes
   style?: {
-    shape?: 'circle' | 'square' | 'hexagon';
-    color?: string;
+    icon?: string; // Lucide icon name (e.g., 'briefcase', 'circle', 'code-2')
+    iconGroup?: string; // Icon group ID (e.g., 'project-task', 'engineering')
     x?: number;
     y?: number;
   };
