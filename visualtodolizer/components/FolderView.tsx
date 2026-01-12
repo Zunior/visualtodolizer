@@ -1,11 +1,14 @@
 import pb, { Node } from '@/lib/pocketbase';
+import { SciFiTheme } from '@/constants/scifiTheme';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, Dimensions, Modal, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Alert, Dimensions, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import DraggableNode from './DraggableNode';
 import IconChangeModal from './IconChangeModal';
 import NodeContextMenu from './NodeContextMenu';
+import SciFiBackground from './SciFiBackground';
 import TextEditor from './TextEditor';
 
 interface FolderViewProps {
@@ -177,44 +180,31 @@ export default function FolderView({ parentId }: FolderViewProps) {
     };
 
     return (
-        <ScrollView
-            className="flex-1"
-            style={{ backgroundColor: '#B0FFFA' }}
-            contentContainerStyle={{ minHeight: canvasHeight, position: 'relative' }}
-            refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchNodes} />}
-        >
+        <SciFiBackground>
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={{ minHeight: canvasHeight, position: 'relative' }}
+                refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchNodes} tintColor={SciFiTheme.colors.neonCyan} />}
+            >
+                {nodes.map((node) => (
+                    <DraggableNode
+                        key={node.id}
+                        node={node}
+                        onDragEnd={updateNodePosition}
+                        onPress={handlePress}
+                        onLongPress={handleLongPress}
+                    />
+                ))}
 
-
-            {nodes.map((node) => (
-                <DraggableNode
-                    key={node.id}
-                    node={node}
-                    onDragEnd={updateNodePosition}
-                    onPress={handlePress}
-                    onLongPress={handleLongPress}
-                />
-            ))}
-
-            <View style={{ position: 'absolute', top: 20, left: 20, zIndex: 1000 }}>
-                <Pressable
-                    onPress={() => router.push(`/modal?parentId=${parentId}`)}
-                    style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: 25,
-                        backgroundColor: '#3b82f6',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
-                        elevation: 5,
-                    }}
-                >
-                    <Text style={{ color: 'white', fontSize: 30, marginTop: -2 }}>+</Text>
-                </Pressable>
-            </View>
+                <View style={styles.addButtonContainer}>
+                    <Pressable
+                        onPress={() => router.push(`/modal?parentId=${parentId}`)}
+                        style={styles.addButton}
+                    >
+                        <Ionicons name="add" size={28} color={SciFiTheme.colors.neonCyan} />
+                    </Pressable>
+                </View>
+            </ScrollView>
 
             <Modal
                 visible={selectedTextNodeId !== null}
@@ -223,7 +213,7 @@ export default function FolderView({ parentId }: FolderViewProps) {
                 onRequestClose={() => setSelectedTextNodeId(null)}
             >
                 <Pressable
-                    style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
+                    style={{ flex: 1, backgroundColor: SciFiTheme.colors.overlay, justifyContent: 'center', alignItems: 'center' }}
                     onPress={() => setSelectedTextNodeId(null)}
                 >
                     <Pressable
@@ -279,6 +269,29 @@ export default function FolderView({ parentId }: FolderViewProps) {
                 onConfirm={handleDeleteConfirm}
                 onCancel={handleDeleteCancel}
             />
-        </ScrollView>
+        </SciFiBackground>
     );
 }
+
+const styles = StyleSheet.create({
+    scrollView: {
+        flex: 1,
+    },
+    addButtonContainer: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 1000,
+    },
+    addButton: {
+        width: 50,
+        height: 50,
+        borderRadius: 4,
+        backgroundColor: SciFiTheme.colors.bgSecondary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderPrimary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        ...SciFiTheme.effects.glow,
+    },
+});

@@ -1,16 +1,15 @@
 import FolderView from '@/components/FolderView';
+import { SciFiTheme } from '@/constants/scifiTheme';
 import pb, { Node } from '@/lib/pocketbase';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { TouchableOpacity, View, useColorScheme } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 
 export default function FolderPage() {
     const { id } = useLocalSearchParams();
     const folderId = Array.isArray(id) ? id[0] : id;
     const [currentNode, setCurrentNode] = useState<Node | null>(null);
-    const theme = useColorScheme();
-    const iconColor = theme === 'dark' ? 'white' : 'black';
 
     useEffect(() => {
         if (folderId && folderId !== 'root') {
@@ -56,9 +55,31 @@ export default function FolderPage() {
                 options={{
                     title: currentNode?.title || (folderId === 'root' ? 'Home' : 'Folder'),
                     headerBackVisible: folderId === 'root' ? false : undefined,
+                    headerStyle: {
+                        backgroundColor: SciFiTheme.colors.bgSecondary,
+                        borderBottomWidth: 1,
+                        borderBottomColor: SciFiTheme.colors.borderDim,
+                        elevation: 0,
+                    },
+                    headerTintColor: SciFiTheme.colors.neonCyan,
+                    headerTitleStyle: {
+                        color: SciFiTheme.colors.textPrimary,
+                        fontWeight: '700',
+                        fontSize: 18,
+                    },
                     headerLeft: folderId !== 'root' ? () => (
-                        <TouchableOpacity onPress={handleBack} style={{ marginRight: 10 }}>
-                            <Ionicons name="arrow-back" size={24} color={iconColor} />
+                        <TouchableOpacity 
+                            onPress={handleBack} 
+                            style={{ 
+                                marginLeft: 10, 
+                                padding: 8,
+                                borderRadius: 4,
+                                borderWidth: 1,
+                                borderColor: SciFiTheme.colors.borderDim,
+                                backgroundColor: SciFiTheme.colors.bgTertiary,
+                            }}
+                        >
+                            <Ionicons name="arrow-back" size={20} color={SciFiTheme.colors.neonCyan} />
                         </TouchableOpacity>
                     ) : undefined
                 }}

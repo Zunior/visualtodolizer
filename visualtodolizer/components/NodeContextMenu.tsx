@@ -1,3 +1,4 @@
+import { SciFiTheme } from '@/constants/scifiTheme';
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,7 +40,7 @@ export default function NodeContextMenu({
             }}
             activeOpacity={0.7}
           >
-            <Ionicons name="image-outline" size={20} color="#334155" />
+            <Ionicons name="image-outline" size={20} color={SciFiTheme.colors.neonCyan} />
             <Text style={styles.menuItemText}>Change Icon</Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -50,7 +51,7 @@ export default function NodeContextMenu({
             }}
             activeOpacity={0.7}
           >
-            <Ionicons name="trash-outline" size={20} color="#ef4444" />
+            <Ionicons name="trash-outline" size={20} color="#ff4444" />
             <Text style={[styles.menuItemText, styles.deleteText]}>Delete</Text>
           </TouchableOpacity>
         </View>
@@ -62,19 +63,17 @@ export default function NodeContextMenu({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: SciFiTheme.colors.overlayLight,
   },
   menu: {
     position: 'absolute',
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: SciFiTheme.colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderPrimary,
+    borderRadius: 4,
     padding: 8,
     minWidth: 180,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    ...SciFiTheme.effects.glow,
   },
   menuItem: {
     flexDirection: 'row',
@@ -85,9 +84,9 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    color: '#334155',
+    color: SciFiTheme.colors.textPrimary,
   },
   deleteText: {
-    color: '#ef4444',
+    color: '#ff4444',
   },
 });

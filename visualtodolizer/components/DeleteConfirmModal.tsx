@@ -1,3 +1,4 @@
+import { SciFiTheme } from '@/constants/scifiTheme';
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -50,31 +51,29 @@ export default function DeleteConfirmModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: SciFiTheme.colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
+    backgroundColor: SciFiTheme.colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderPrimary,
+    borderRadius: 4,
     padding: 24,
     minWidth: 300,
     maxWidth: '80%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    ...SciFiTheme.effects.glowStrong,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#334155',
+    color: SciFiTheme.colors.textPrimary,
     marginBottom: 12,
   },
   message: {
     fontSize: 16,
-    color: '#64748b',
+    color: SciFiTheme.colors.textSecondary,
     marginBottom: 24,
     lineHeight: 22,
   },
@@ -86,23 +85,26 @@ const styles = StyleSheet.create({
   button: {
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 4,
     minWidth: 80,
     alignItems: 'center',
+    borderWidth: 1,
   },
   cancelButton: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: SciFiTheme.colors.bgTertiary,
+    borderColor: SciFiTheme.colors.borderDim,
   },
   cancelButtonText: {
-    color: '#64748b',
+    color: SciFiTheme.colors.textSecondary,
     fontSize: 16,
     fontWeight: '600',
   },
   deleteButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: 'transparent',
+    borderColor: '#ff4444',
   },
   deleteButtonText: {
-    color: 'white',
+    color: '#ff4444',
     fontSize: 16,
     fontWeight: '600',
   },

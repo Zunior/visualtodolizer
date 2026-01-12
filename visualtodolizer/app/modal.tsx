@@ -1,5 +1,6 @@
 import LucideIcon from '@/components/LucideIcon';
 import { ICON_GROUPS, getIconsForGroupAndType } from '@/constants/iconGroups';
+import { SciFiTheme } from '@/constants/scifiTheme';
 import pb from '@/lib/pocketbase';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -75,10 +76,32 @@ export default function ModalScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: 'Modal',
+          title: 'New Node',
+          headerStyle: {
+            backgroundColor: SciFiTheme.colors.bgSecondary,
+            borderBottomWidth: 1,
+            borderBottomColor: SciFiTheme.colors.borderDim,
+            elevation: 0,
+          },
+          headerTintColor: SciFiTheme.colors.neonCyan,
+          headerTitleStyle: {
+            color: SciFiTheme.colors.textPrimary,
+            fontWeight: '700',
+            fontSize: 18,
+          },
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.dismiss()} style={{ marginLeft: 10, padding: 8 }}>
-              <Ionicons name="arrow-back" size={24} color="#334155" />
+            <TouchableOpacity 
+              onPress={() => router.dismiss()} 
+              style={{ 
+                marginLeft: 10, 
+                padding: 8,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: SciFiTheme.colors.borderDim,
+                backgroundColor: SciFiTheme.colors.bgTertiary,
+              }}
+            >
+              <Ionicons name="arrow-back" size={20} color={SciFiTheme.colors.neonCyan} />
             </TouchableOpacity>
           ),
         }}
@@ -87,14 +110,17 @@ export default function ModalScreen() {
 
         <ScrollView style={styles.form}>
         <Text style={styles.label}>Title</Text>
-        <TextInput
-          style={[styles.input, { width: SCREEN_WIDTH * 0.5 }]}
-          placeholder="Enter title..."
-          value={title}
-          onChangeText={setTitle}
-          multiline
-          autoFocus
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={[styles.input, { width: SCREEN_WIDTH * 0.5 - 4 }]}
+            placeholder="Enter title..."
+            placeholderTextColor={SciFiTheme.colors.textSecondary}
+            value={title}
+            onChangeText={setTitle}
+            multiline
+            autoFocus
+          />
+        </View>
 
         <Text style={styles.label}>Type</Text>
         <View style={styles.radioContainer}>
@@ -154,7 +180,7 @@ export default function ModalScreen() {
                   <LucideIcon
                     iconName={iconName}
                     size={32}
-                    color={selectedIcon === iconName ? '#3b82f6' : '#64748b'}
+                    color={selectedIcon === iconName ? SciFiTheme.colors.neonCyan : SciFiTheme.colors.textSecondary}
                   />
                   <Text
                     style={[
@@ -179,7 +205,7 @@ export default function ModalScreen() {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="white" />
+            <ActivityIndicator color={SciFiTheme.colors.neonCyan} />
           ) : (
             <Text style={styles.createButtonText}>Create</Text>
           )}
@@ -194,7 +220,7 @@ export default function ModalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: SciFiTheme.colors.bgPrimary,
     padding: 20,
   },
   headerTitle: {
@@ -203,6 +229,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 10,
     textAlign: 'center',
+    color: SciFiTheme.colors.textPrimary,
   },
   form: {
     flex: 1,
@@ -212,17 +239,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     marginTop: 16,
-    color: '#334155',
+    color: SciFiTheme.colors.textPrimary,
+  },
+  inputWrapper: {
+    marginHorizontal: 2,
+    marginVertical: 4,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 8,
+    borderColor: SciFiTheme.colors.borderDim,
+    borderRadius: 4,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#f8fafc',
+    backgroundColor: SciFiTheme.colors.bgSecondary,
+    color: SciFiTheme.colors.textPrimary,
     minHeight: 80,
     textAlignVertical: 'top',
+    outlineStyle: 'none',
   },
   radioContainer: {
     flexDirection: 'row',
@@ -238,7 +271,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#3b82f6',
+    borderColor: SciFiTheme.colors.borderPrimary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -246,11 +279,11 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#3b82f6',
+    backgroundColor: SciFiTheme.colors.neonCyan,
   },
   radioLabel: {
     fontSize: 16,
-    color: '#334155',
+    color: SciFiTheme.colors.textPrimary,
   },
   iconSelectionContainer: {
     flexDirection: 'row',
@@ -261,29 +294,33 @@ const styles = StyleSheet.create({
   groupList: {
     alignSelf: 'flex-start',
     borderRightWidth: 1,
-    borderRightColor: '#e2e8f0',
+    borderRightColor: SciFiTheme.colors.borderDim,
     paddingRight: 12,
     minWidth: 150,
   },
   groupListItem: {
     paddingVertical: 12,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 4,
     marginBottom: 4,
-    backgroundColor: '#f8fafc',
+    backgroundColor: SciFiTheme.colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderDim,
     alignSelf: 'flex-start',
   },
   groupListItemSelected: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: SciFiTheme.colors.bgTertiary,
+    borderColor: SciFiTheme.colors.borderPrimary,
+    ...SciFiTheme.effects.glow,
   },
   groupListText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#64748b',
+    color: SciFiTheme.colors.textSecondary,
     flexShrink: 0,
   },
   groupListTextSelected: {
-    color: 'white',
+    color: SciFiTheme.colors.neonCyan,
     fontWeight: '600',
   },
   iconsContainer: {
@@ -300,24 +337,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#f8fafc',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderDim,
+    backgroundColor: SciFiTheme.colors.bgSecondary,
     gap: 12,
     alignSelf: 'flex-start',
   },
   selectedIconOption: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#eff6ff',
+    borderColor: SciFiTheme.colors.borderPrimary,
+    backgroundColor: SciFiTheme.colors.bgTertiary,
+    ...SciFiTheme.effects.glow,
   },
   iconName: {
     fontSize: 14,
-    color: '#64748b',
+    color: SciFiTheme.colors.textSecondary,
     flexShrink: 0,
   },
   iconNameSelected: {
-    color: '#3b82f6',
+    color: SciFiTheme.colors.neonCyan,
     fontWeight: '600',
   },
   footer: {
@@ -325,16 +363,19 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   createButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderPrimary,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
     minWidth: 100,
+    ...SciFiTheme.effects.glow,
   },
   createButtonText: {
-    color: 'white',
+    color: SciFiTheme.colors.neonCyan,
     fontSize: 16,
     fontWeight: '600',
   },

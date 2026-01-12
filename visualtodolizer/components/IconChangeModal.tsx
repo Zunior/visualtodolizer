@@ -1,5 +1,6 @@
 import LucideIcon from '@/components/LucideIcon';
 import { ICON_GROUPS, getIconsForGroupAndType } from '@/constants/iconGroups';
+import { SciFiTheme } from '@/constants/scifiTheme';
 import { Node } from '@/lib/pocketbase';
 import pb from '@/lib/pocketbase';
 import { useState, useEffect } from 'react';
@@ -95,7 +96,7 @@ export default function IconChangeModal({
             onPress={onClose}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color="#334155" />
+            <Ionicons name="arrow-back" size={24} color={SciFiTheme.colors.neonCyan} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Change Icon</Text>
         </View>
@@ -145,7 +146,7 @@ export default function IconChangeModal({
                 <LucideIcon
                   iconName={iconName}
                   size={32}
-                  color={selectedIcon === iconName ? '#3b82f6' : '#64748b'}
+                  color={selectedIcon === iconName ? SciFiTheme.colors.neonCyan : SciFiTheme.colors.textSecondary}
                 />
                 <Text
                   style={[
@@ -168,7 +169,7 @@ export default function IconChangeModal({
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color={SciFiTheme.colors.neonCyan} />
             ) : (
               <Text style={styles.saveButtonText}>Save</Text>
             )}
@@ -184,7 +185,7 @@ export default function IconChangeModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: SciFiTheme.colors.bgPrimary,
   },
   header: {
     flexDirection: 'row',
@@ -192,7 +193,8 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 50,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: SciFiTheme.colors.borderDim,
+    backgroundColor: SciFiTheme.colors.bgSecondary,
   },
   backButton: {
     marginRight: 12,
@@ -201,18 +203,19 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#334155',
+    color: SciFiTheme.colors.textPrimary,
   },
   form: {
     flex: 1,
     padding: 20,
+    backgroundColor: SciFiTheme.colors.bgPrimary,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     marginTop: 16,
-    color: '#334155',
+    color: SciFiTheme.colors.textPrimary,
   },
   groupScroll: {
     marginVertical: 8,
@@ -220,24 +223,25 @@ const styles = StyleSheet.create({
   groupButton: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 8,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
-    backgroundColor: '#f8fafc',
+    borderColor: SciFiTheme.colors.borderDim,
+    backgroundColor: SciFiTheme.colors.bgSecondary,
     marginRight: 8,
     minWidth: 120,
   },
   groupButtonSelected: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
+    backgroundColor: SciFiTheme.colors.bgTertiary,
+    borderColor: SciFiTheme.colors.borderPrimary,
+    ...SciFiTheme.effects.glow,
   },
   groupText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#64748b',
+    color: SciFiTheme.colors.textSecondary,
   },
   groupTextSelected: {
-    color: 'white',
+    color: SciFiTheme.colors.neonCyan,
   },
   iconGrid: {
     flexDirection: 'row',
@@ -248,40 +252,45 @@ const styles = StyleSheet.create({
     width: 100,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#e2e8f0',
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderDim,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: SciFiTheme.colors.bgSecondary,
     gap: 6,
   },
   selectedIconOption: {
-    borderColor: '#3b82f6',
-    backgroundColor: '#eff6ff',
+    borderColor: SciFiTheme.colors.borderPrimary,
+    backgroundColor: SciFiTheme.colors.bgTertiary,
+    ...SciFiTheme.effects.glow,
   },
   iconName: {
     fontSize: 11,
-    color: '#64748b',
+    color: SciFiTheme.colors.textSecondary,
     textAlign: 'center',
   },
   iconNameSelected: {
-    color: '#3b82f6',
+    color: SciFiTheme.colors.neonCyan,
     fontWeight: '600',
   },
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: SciFiTheme.colors.borderDim,
+    backgroundColor: SciFiTheme.colors.bgSecondary,
   },
   saveButton: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderPrimary,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 4,
     alignItems: 'center',
+    ...SciFiTheme.effects.glow,
   },
   saveButtonText: {
-    color: 'white',
+    color: SciFiTheme.colors.neonCyan,
     fontSize: 18,
     fontWeight: 'bold',
   },

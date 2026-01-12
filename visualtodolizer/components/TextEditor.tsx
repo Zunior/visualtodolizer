@@ -1,7 +1,8 @@
 import pb, { Node } from '@/lib/pocketbase';
+import { SciFiTheme } from '@/constants/scifiTheme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, Dimensions, Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
@@ -104,8 +105,8 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
 
     if (loading) {
         return (
-            <View className="flex-1 p-4 items-center justify-center" style={{ backgroundColor: '#B0FFFA' }}>
-                <Text className="text-lg text-gray-500 dark:text-gray-400">Loading...</Text>
+            <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Loading...</Text>
             </View>
         );
     }
@@ -113,78 +114,38 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
     if (onClose) {
         // Modal mode: textbox fills the container, container resizes
         return (
-            <Animated.View style={[{ width: '100%', height: '100%', backgroundColor: '#B0FFFA', borderRadius: 12, padding: 16 }, textBoxStyle]}>
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+            <Animated.View style={[styles.modalContainer, textBoxStyle]}>
+                <View style={styles.closeButtonContainer}>
                     <Pressable
                         onPress={onClose}
-                        style={{
-                            padding: 8,
-                            borderRadius: 20,
-                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        }}
+                        style={styles.closeButton}
                     >
-                        <Ionicons name="close" size={24} color="#000" />
+                        <Ionicons name="close" size={24} color={SciFiTheme.colors.neonCyan} />
                     </Pressable>
                 </View>
-                <View style={{ flex: 1, marginBottom: 10, position: 'relative' }}>
+                <View style={styles.textInputContainer}>
                     <TextInput
-                        className="text-lg text-black border border-gray-300 rounded-md"
-                        style={{ 
-                            width: '100%', 
-                            height: '100%', 
-                            padding: 16,
-                            paddingRight: 40,
-                            backgroundColor: '#FFFFFF',
-                            color: '#000000',
-                        }}
+                        style={styles.textInput}
                         multiline
                         value={content}
                         onChangeText={setContent}
                         textAlignVertical="top"
                         placeholder="Enter your text here..."
-                        placeholderTextColor="#9CA3AF"
+                        placeholderTextColor={SciFiTheme.colors.textSecondary}
                     />
                     <GestureDetector gesture={resizeGesture}>
-                        <Animated.View
-                            style={{
-                                position: 'absolute',
-                                bottom: 2,
-                                right: 2,
-                                width: 20,
-                                height: 20,
-                                backgroundColor: '#3b82f6',
-                                borderBottomRightRadius: 4,
-                                borderTopLeftRadius: 4,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <View
-                                style={{
-                                    width: 0,
-                                    height: 0,
-                                    borderLeftWidth: 5,
-                                    borderLeftColor: 'transparent',
-                                    borderBottomWidth: 5,
-                                    borderBottomColor: 'white',
-                                }}
-                            />
+                        <Animated.View style={styles.resizeHandle}>
+                            <View style={styles.resizeHandleIcon} />
                         </Animated.View>
                     </GestureDetector>
                 </View>
-                <View style={{ alignSelf: 'center' }}>
+                <View style={styles.saveButtonContainer}>
                     <Pressable
                         onPress={handleSave}
                         disabled={saving || loading}
-                        style={{
-                            backgroundColor: saving ? '#9CA3AF' : '#3b82f6',
-                            paddingHorizontal: 20,
-                            paddingVertical: 10,
-                            borderRadius: 8,
-                            minWidth: 100,
-                        }}
+                        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
                     >
-                        <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>
+                        <Text style={styles.saveButtonText}>
                             {saving ? "Saving..." : "Save"}
                         </Text>
                     </Pressable>
@@ -195,70 +156,34 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
 
     // Non-modal mode: original layout
     return (
-        <View className="flex-1 p-4" style={{ backgroundColor: '#B0FFFA', borderRadius: 12 }}>
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Animated.View style={[{ position: 'relative' }, textBoxStyle]}>
-                    <View style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <View style={styles.container}>
+            <View style={styles.contentContainer}>
+                <Animated.View style={[styles.textBoxWrapper, textBoxStyle]}>
+                    <View style={styles.textBoxInner}>
                         <TextInput
-                            className="text-lg text-black border border-gray-300 rounded-md"
-                            style={{ 
-                                width: '100%', 
-                                height: '100%', 
-                                padding: 16,
-                                paddingRight: 40,
-                                backgroundColor: '#FFFFFF',
-                                color: '#000000',
-                            }}
+                            style={styles.textInput}
                             multiline
                             value={content}
                             onChangeText={setContent}
                             textAlignVertical="top"
                             placeholder="Enter your text here..."
-                            placeholderTextColor="#9CA3AF"
+                            placeholderTextColor={SciFiTheme.colors.textSecondary}
                         />
                         <GestureDetector gesture={resizeGesture}>
-                            <Animated.View
-                                style={{
-                                    position: 'absolute',
-                                    bottom: 2,
-                                    right: 2,
-                                    width: 20,
-                                    height: 20,
-                                    backgroundColor: '#3b82f6',
-                                    borderBottomRightRadius: 4,
-                                    borderTopLeftRadius: 4,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <View
-                                    style={{
-                                        width: 0,
-                                        height: 0,
-                                        borderLeftWidth: 5,
-                                        borderLeftColor: 'transparent',
-                                        borderBottomWidth: 5,
-                                        borderBottomColor: 'white',
-                                    }}
-                                />
+                            <Animated.View style={styles.resizeHandle}>
+                                <View style={styles.resizeHandleIcon} />
                             </Animated.View>
                         </GestureDetector>
                     </View>
                 </Animated.View>
             </View>
-            <View className="mt-4" style={{ alignSelf: 'center', marginBottom: 10 }}>
+            <View style={styles.saveButtonContainer}>
                 <Pressable
                     onPress={handleSave}
                     disabled={saving || loading}
-                    style={{
-                        backgroundColor: saving ? '#9CA3AF' : '#3b82f6',
-                        paddingHorizontal: 20,
-                        paddingVertical: 10,
-                        borderRadius: 8,
-                        minWidth: 100,
-                    }}
+                    style={[styles.saveButton, saving && styles.saveButtonDisabled]}
                 >
-                    <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600' }}>
+                    <Text style={styles.saveButtonText}>
                         {saving ? "Saving..." : "Save"}
                     </Text>
                 </Pressable>
@@ -266,3 +191,121 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    loadingContainer: {
+        flex: 1,
+        padding: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: SciFiTheme.colors.bgPrimary,
+    },
+    loadingText: {
+        fontSize: 18,
+        color: SciFiTheme.colors.textSecondary,
+    },
+    container: {
+        flex: 1,
+        padding: 16,
+        backgroundColor: SciFiTheme.colors.bgPrimary,
+        borderRadius: 4,
+    },
+    contentContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalContainer: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: SciFiTheme.colors.bgSecondary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderPrimary,
+        borderRadius: 4,
+        padding: 16,
+        ...SciFiTheme.effects.glow,
+    },
+    closeButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginBottom: 10,
+    },
+    closeButton: {
+        padding: 8,
+        borderRadius: 4,
+        backgroundColor: SciFiTheme.colors.bgTertiary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderDim,
+    },
+    textInputContainer: {
+        flex: 1,
+        marginBottom: 10,
+        position: 'relative',
+    },
+    textBoxWrapper: {
+        position: 'relative',
+    },
+    textBoxInner: {
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+    },
+    textInput: {
+        width: '100%',
+        height: '100%',
+        padding: 16,
+        paddingRight: 40,
+        backgroundColor: SciFiTheme.colors.bgTertiary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderDim,
+        borderRadius: 4,
+        color: SciFiTheme.colors.textPrimary,
+        fontSize: 16,
+    },
+    resizeHandle: {
+        position: 'absolute',
+        bottom: 2,
+        right: 2,
+        width: 20,
+        height: 20,
+        backgroundColor: SciFiTheme.colors.bgSecondary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderPrimary,
+        borderBottomRightRadius: 4,
+        borderTopLeftRadius: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    resizeHandleIcon: {
+        width: 0,
+        height: 0,
+        borderLeftWidth: 5,
+        borderLeftColor: 'transparent',
+        borderBottomWidth: 5,
+        borderBottomColor: SciFiTheme.colors.neonCyan,
+    },
+    saveButtonContainer: {
+        alignSelf: 'center',
+        marginBottom: 10,
+    },
+    saveButton: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderPrimary,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 4,
+        minWidth: 100,
+        ...SciFiTheme.effects.glow,
+    },
+    saveButtonDisabled: {
+        borderColor: SciFiTheme.colors.borderDim,
+        opacity: 0.5,
+    },
+    saveButtonText: {
+        color: SciFiTheme.colors.neonCyan,
+        textAlign: 'center',
+        fontWeight: '600',
+        fontSize: 16,
+    },
+});

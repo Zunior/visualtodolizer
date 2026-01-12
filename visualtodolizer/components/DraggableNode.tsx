@@ -1,6 +1,7 @@
 import { Node } from '@/lib/pocketbase';
+import { SciFiTheme } from '@/constants/scifiTheme';
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import LucideIcon from './LucideIcon';
@@ -71,17 +72,49 @@ export default function DraggableNode({ node, onDragEnd, onPress, onLongPress }:
     return (
         <GestureDetector gesture={composedGesture}>
             <Animated.View style={animatedStyle}>
-                <View className="bg-white dark:bg-gray-800 p-4 rounded-xl items-center justify-center shadow-sm w-32 h-32">
-                    <LucideIcon iconName={node.style?.icon} size={40} color="#3b82f6" />
-                    <Text 
-                        className="mt-2 font-medium text-gray-800 dark:text-gray-200" 
-                        style={{ textAlign: 'center', width: '100%' }}
-                        numberOfLines={1}
-                    >
-                        {node.title}
-                    </Text>
+                <View style={styles.nodeContainer}>
+                    <View style={styles.nodeBorder}>
+                        <View style={styles.nodeContent}>
+                            <LucideIcon iconName={node.style?.icon} size={40} color={SciFiTheme.colors.neonCyan} />
+                            <Text style={styles.nodeTitle} numberOfLines={1}>
+                                {node.title}
+                            </Text>
+                        </View>
+                    </View>
                 </View>
             </Animated.View>
         </GestureDetector>
     );
 }
+
+const styles = StyleSheet.create({
+    nodeContainer: {
+        width: 128,
+        height: 128,
+    },
+    nodeBorder: {
+        flex: 1,
+        backgroundColor: SciFiTheme.colors.bgSecondary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderPrimary,
+        borderRadius: 4,
+        padding: 2,
+        ...SciFiTheme.effects.glow,
+    },
+    nodeContent: {
+        flex: 1,
+        backgroundColor: SciFiTheme.colors.bgTertiary,
+        borderRadius: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 12,
+    },
+    nodeTitle: {
+        marginTop: 8,
+        fontSize: 12,
+        fontWeight: '600',
+        color: SciFiTheme.colors.textPrimary,
+        textAlign: 'center',
+        width: '100%',
+    },
+});
