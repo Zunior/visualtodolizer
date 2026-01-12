@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import DraggableNode from './DraggableNode';
 import IconChangeModal from './IconChangeModal';
+import MoveToParentBox from './MoveToParentBox';
 import NodeContextMenu from './NodeContextMenu';
 import SciFiBackground from './SciFiBackground';
 import TextEditor from './TextEditor';
@@ -27,6 +28,9 @@ export default function FolderView({ parentId }: FolderViewProps) {
     const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
     const [deleteConfirmMessage, setDeleteConfirmMessage] = useState('');
     const [nodeToDelete, setNodeToDelete] = useState<Node | null>(null);
+    const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
+    const [draggingNodePosition, setDraggingNodePosition] = useState<{ x: number; y: number } | null>(null);
+    const [hoveringParentBox, setHoveringParentBox] = useState(false);
     const router = useRouter();
 
     // We need a large canvas for dragging.
@@ -45,6 +49,98 @@ export default function FolderView({ parentId }: FolderViewProps) {
             console.error("Error fetching nodes:", e);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDragStart = (id: string) => {
+        setDraggingNodeId(id);
+    };
+
+    const handleDragUpdate = (id: string, x: number, y: number) => {
+        if (draggingNodeId === id) {
+            setDraggingNodePosition({ x, y });
+            
+            // Check if dragging node is over the parent box area (upper center)
+            // Parent box is at top center, approximately: x: screenWidth/2 - 100, y: 20, width: 200, height: ~50
+            const screenWidth = Dimensions.get('window').width;
+            const boxLeft = screenWidth / 2 - 100;
+            const boxRight = screenWidth / 2 + 100;
+            const boxTop = 20;
+            const boxBottom = 80; // Approximate height
+            
+            const isOverParentBox = (
+                x < boxRight &&
+                x + 128 > boxLeft && // NODE_SIZE = 128
+                y < boxBottom &&
+                y + 128 > boxTop
+            );
+            
+            setHoveringParentBox(isOverParentBox);
+        }
+    };
+
+    const handleDragEnd = (id: string) => {
+        if (draggingNodeId === id) {
+            setDraggingNodeId(null);
+            setDraggingNodePosition(null);
+            setHoveringParentBox(false);
+        }
+    };
+
+    const moveNodeToParent = async (nodeId: string) => {
+        try {
+            const node = nodes.find(n => n.id === nodeId);
+            if (!node) return;
+            
+            // Move the node to the parent of the current view
+            // If parentId is 'root', move to root (empty string)
+            // Otherwise, get the parent of the current canvas
+            let newParentId = '';
+            if (parentId !== 'root') {
+                try {
+                    const currentCanvas = await pb.collection('nodes').getOne<Node>(parentId);
+                    newParentId = currentCanvas.parent || '';
+                } catch (e) {
+                    console.error('Error getting current canvas parent:', e);
+                    newParentId = '';
+                }
+            }
+            
+            // Update the node's parent
+            await pb.collection('nodes').update(nodeId, {
+                parent: newParentId,
+                style: {
+                    ...node.style,
+                    x: 0, // Reset position to 0,0 in parent
+                    y: 0,
+                }
+            });
+            
+            // Refresh nodes to reflect the change
+            await fetchNodes();
+        } catch (e) {
+            console.error("Error moving node to parent:", e);
+            Alert.alert('Error', 'Failed to move node to parent');
+        }
+    };
+
+    const moveNodeToCanvas = async (nodeId: string, targetCanvasId: string) => {
+        try {
+            // Update the node's parent to the target canvas
+            await pb.collection('nodes').update(nodeId, {
+                parent: targetCanvasId,
+                style: {
+                    ...nodes.find(n => n.id === nodeId)?.style,
+                    x: 0, // Reset position to 0,0 in new canvas
+                    y: 0,
+                }
+            });
+            
+            // Refresh nodes to reflect the change
+            await fetchNodes();
+        } catch (e) {
+            console.error("Error moving node to canvas:", e);
+            Alert.alert('Error', 'Failed to move node to canvas');
         }
     };
 
@@ -186,11 +282,33 @@ export default function FolderView({ parentId }: FolderViewProps) {
                 contentContainerStyle={{ minHeight: canvasHeight, position: 'relative' }}
                 refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchNodes} tintColor={SciFiTheme.colors.neonCyan} />}
             >
+                <MoveToParentBox visible={draggingNodeId !== null} hasHover={hoveringParentBox} />
+                
                 {nodes.map((node) => (
                     <DraggableNode
                         key={node.id}
                         node={node}
-                        onDragEnd={updateNodePosition}
+                        otherNodes={nodes}
+                        draggingNodeId={draggingNodeId}
+                        draggingNodePosition={draggingNodePosition}
+                        hoveringParentBox={hoveringParentBox && draggingNodeId === node.id}
+                        onDragStart={handleDragStart}
+                        onDragUpdate={handleDragUpdate}
+                        onDragEnd={async (id, x, y, targetCanvasId) => {
+                            handleDragEnd(id);
+                            
+                            // If hovering over parent box, move to parent
+                            if (hoveringParentBox) {
+                                await moveNodeToParent(id);
+                            }
+                            // If dropped over a canvas, move the node into that canvas
+                            else if (targetCanvasId) {
+                                await moveNodeToCanvas(id, targetCanvasId);
+                            } else {
+                                // Otherwise, just update position
+                                await updateNodePosition(id, x, y);
+                            }
+                        }}
                         onPress={handlePress}
                         onLongPress={handleLongPress}
                     />
