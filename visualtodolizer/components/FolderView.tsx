@@ -265,8 +265,13 @@ export default function FolderView({ parentId }: FolderViewProps) {
     };
 
     const handleChangeIcon = () => {
+        // Close the context menu but keep selectedNodeForMenu for the modal
         setContextMenuVisible(false);
-        setIconChangeModalVisible(true);
+        // Use a small delay to ensure the context menu closes before opening the icon change modal
+        // This prevents React Native from trying to render two modals simultaneously
+        setTimeout(() => {
+            setIconChangeModalVisible(true);
+        }, 200);
     };
 
     const handleIconChanged = () => {

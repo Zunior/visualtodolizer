@@ -63,7 +63,7 @@ export default function FolderPage() {
                     },
                     headerTintColor: SciFiTheme.colors.neonCyan,
                     headerTitleStyle: {
-                        color: SciFiTheme.colors.textPrimary,
+                        color: SciFiTheme.colors.neonCyan,
                         fontWeight: '700',
                         fontSize: 18,
                     },

@@ -197,13 +197,18 @@ export default function DraggableNode({
             <Animated.View style={animatedStyle}>
                 <View style={styles.nodeContainer}>
                     <View style={[
-                        styles.nodeBorder, 
+                        styles.nodeBorder,
+                        // Make panels circular, text nodes square
+                        node.type === 'panel' && styles.nodeBorderCircle,
                         // Show collision border if this node is being dragged and colliding or hovering parent box
                         (draggingNodeId === node.id && (hasCollision || hoveringParentBox)) && styles.nodeBorderCollision,
                         // Show canvas target border if this is a canvas being overlapped (but not dragged)
                         overlappedCanvasId && node.type === 'panel' && draggingNodeId !== node.id && styles.nodeBorderCanvasTarget
                     ]}>
-                        <View style={styles.nodeContent}>
+                        <View style={[
+                            styles.nodeContent,
+                            node.type === 'panel' && styles.nodeContentCircle
+                        ]}>
                             <LucideIcon 
                                 iconName={node.style?.icon} 
                                 size={40} 
@@ -238,9 +243,12 @@ const styles = StyleSheet.create({
         backgroundColor: SciFiTheme.colors.bgSecondary,
         borderWidth: 1,
         borderColor: SciFiTheme.colors.borderPrimary,
-        borderRadius: 4,
+        borderRadius: 4, // Square for text nodes
         padding: 2,
         ...SciFiTheme.effects.glow,
+    },
+    nodeBorderCircle: {
+        borderRadius: 64, // Half of NODE_SIZE (128) to make panels circular
     },
     nodeBorderCollision: {
         borderColor: SciFiTheme.colors.neonGreen,
@@ -256,16 +264,19 @@ const styles = StyleSheet.create({
     nodeContent: {
         flex: 1,
         backgroundColor: SciFiTheme.colors.bgTertiary,
-        borderRadius: 2,
+        borderRadius: 2, // Square inner content for text nodes
         alignItems: 'center',
         justifyContent: 'center',
         padding: 12,
+    },
+    nodeContentCircle: {
+        borderRadius: 62, // Slightly less than outer border to make panels circular
     },
     nodeTitle: {
         marginTop: 8,
         fontSize: 12,
         fontWeight: '600',
-        color: SciFiTheme.colors.textPrimary,
+        color: SciFiTheme.colors.neonCyan,
         textAlign: 'center',
         width: '100%',
     },

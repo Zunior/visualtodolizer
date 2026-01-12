@@ -4,8 +4,10 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 
 interface TextEditorProps {
     nodeId: string;
@@ -79,6 +81,37 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
         }
     };
 
+    const copyButtonScale = useSharedValue(1);
+    const copyButtonOpacity = useSharedValue(1);
+
+    const handleCopy = async () => {
+        // Haptic feedback
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        
+        // Visual feedback animation
+        copyButtonScale.value = withSequence(
+            withTiming(0.9, { duration: 100 }),
+            withTiming(1, { duration: 100 })
+        );
+        copyButtonOpacity.value = withSequence(
+            withTiming(0.6, { duration: 100 }),
+            withTiming(1, { duration: 100 })
+        );
+
+        try {
+            await Clipboard.setStringAsync(content);
+            Alert.alert('Success', 'Text copied to clipboard');
+        } catch (e) {
+            console.error('Error copying to clipboard:', e);
+            Alert.alert('Error', 'Failed to copy text to clipboard');
+        }
+    };
+
+    const copyButtonAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: copyButtonScale.value }],
+        opacity: copyButtonOpacity.value,
+    }));
+
     // Resize gesture
     const startWidth = useSharedValue(initialWidth);
     const startHeight = useSharedValue(initialHeight);
@@ -116,6 +149,14 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
         return (
             <Animated.View style={[styles.modalContainer, textBoxStyle]}>
                 <View style={styles.closeButtonContainer}>
+                    <Animated.View style={copyButtonAnimatedStyle}>
+                        <Pressable
+                            onPress={handleCopy}
+                            style={styles.copyButton}
+                        >
+                            <Ionicons name="copy-outline" size={24} color={SciFiTheme.colors.neonCyan} />
+                        </Pressable>
+                    </Animated.View>
                     <Pressable
                         onPress={onClose}
                         style={styles.closeButton}
@@ -157,6 +198,14 @@ export default function TextEditor({ nodeId, initialContent, onClose, onSizeChan
     // Non-modal mode: original layout
     return (
         <View style={styles.container}>
+            <Animated.View style={[styles.copyButtonContainerNonModal, copyButtonAnimatedStyle]}>
+                <Pressable
+                    onPress={handleCopy}
+                    style={styles.copyButton}
+                >
+                    <Ionicons name="copy-outline" size={24} color={SciFiTheme.colors.neonCyan} />
+                </Pressable>
+            </Animated.View>
             <View style={styles.contentContainer}>
                 <Animated.View style={[styles.textBoxWrapper, textBoxStyle]}>
                     <View style={styles.textBoxInner}>
@@ -228,9 +277,24 @@ const styles = StyleSheet.create({
     closeButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
+        alignItems: 'center',
         marginBottom: 10,
+        gap: 8,
+    },
+    copyButtonContainerNonModal: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        zIndex: 10,
     },
     closeButton: {
+        padding: 8,
+        borderRadius: 4,
+        backgroundColor: SciFiTheme.colors.bgTertiary,
+        borderWidth: 1,
+        borderColor: SciFiTheme.colors.borderDim,
+    },
+    copyButton: {
         padding: 8,
         borderRadius: 4,
         backgroundColor: SciFiTheme.colors.bgTertiary,

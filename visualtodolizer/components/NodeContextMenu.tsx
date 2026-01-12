@@ -36,12 +36,12 @@ export default function NodeContextMenu({
             style={styles.menuItem} 
             onPress={() => {
               onChangeIcon();
-              onClose();
+              // Don't call onClose here - let handleChangeIcon manage the state
             }}
             activeOpacity={0.7}
           >
-            <Ionicons name="image-outline" size={20} color={SciFiTheme.colors.neonCyan} />
-            <Text style={styles.menuItemText}>Change Icon</Text>
+            <Ionicons name="create-outline" size={20} color={SciFiTheme.colors.neonCyan} />
+            <Text style={styles.menuItemText}>Edit Icon</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.menuItem} 

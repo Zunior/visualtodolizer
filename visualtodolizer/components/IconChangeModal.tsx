@@ -14,6 +14,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -40,12 +41,14 @@ export default function IconChangeModal({
   const [selectedIcon, setSelectedIcon] = useState(
     node.style?.icon || ''
   );
+  const [title, setTitle] = useState(node.title || '');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (visible && node) {
       setSelectedGroup(node.style?.iconGroup || ICON_GROUPS[0].id);
       setSelectedIcon(node.style?.icon || '');
+      setTitle(node.title || '');
     }
   }, [visible, node]);
 
@@ -62,9 +65,15 @@ export default function IconChangeModal({
       return;
     }
 
+    if (!title.trim()) {
+      Alert.alert('Error', 'Please enter a title');
+      return;
+    }
+
     setLoading(true);
     try {
       await pb.collection('nodes').update(node.id, {
+        title: title.trim(),
         style: {
           ...node.style,
           icon: selectedIcon,
@@ -74,8 +83,8 @@ export default function IconChangeModal({
       onIconChanged();
       onClose();
     } catch (e: any) {
-      console.error('Error updating icon:', e);
-      Alert.alert('Error', e.message || 'Failed to update icon');
+      console.error('Error updating icon and title:', e);
+      Alert.alert('Error', e.message || 'Failed to update icon and title');
     } finally {
       setLoading(false);
     }
@@ -98,10 +107,23 @@ export default function IconChangeModal({
           >
             <Ionicons name="arrow-back" size={24} color={SciFiTheme.colors.neonCyan} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Change Icon</Text>
+          <Text style={styles.headerTitle}>Edit Icon</Text>
         </View>
 
         <ScrollView style={styles.form}>
+          <Text style={styles.label}>Title</Text>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Enter icon title"
+              placeholderTextColor={SciFiTheme.colors.textSecondary}
+              multiline={false}
+              {...(Platform.OS === 'web' && { outlineStyle: 'none' })}
+            />
+          </View>
+
           <Text style={styles.label}>Icon Group</Text>
           <ScrollView
             horizontal
@@ -293,5 +315,21 @@ const styles = StyleSheet.create({
     color: SciFiTheme.colors.neonCyan,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  inputContainer: {
+    marginBottom: 8,
+    marginHorizontal: 2,
+    marginVertical: 4,
+  },
+  input: {
+    backgroundColor: SciFiTheme.colors.bgSecondary,
+    borderWidth: 1,
+    borderColor: SciFiTheme.colors.borderDim,
+    borderRadius: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: SciFiTheme.colors.textPrimary,
+    ...SciFiTheme.effects.glow,
   },
 });

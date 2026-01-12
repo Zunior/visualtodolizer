@@ -1,14 +1,48 @@
 import LucideIcon from '@/components/LucideIcon';
-import { ICON_GROUPS, getIconsForGroupAndType } from '@/constants/iconGroups';
 import { SciFiTheme } from '@/constants/scifiTheme';
 import pb from '@/lib/pocketbase';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Alert, Dimensions, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Final list of available icons
+const AVAILABLE_ICONS = [
+  'notepad-text',
+  'list-todo',
+  'link',
+  'code-2',
+  'book-open',
+  'key',
+  'scroll-text',
+  'graduation-cap',
+  'help-circle', // FAQ/help icon
+  'lightbulb',
+  'sliders-horizontal',
+  'code-xml',
+  'folder-kanban',
+  'briefcase',
+];
+
+// Display names for icons
+const ICON_DISPLAY_NAMES: Record<string, string> = {
+  'notepad-text': 'note',
+  'list-todo': 'todo list',
+  'link': 'URL',
+  'code-2': 'code',
+  'book-open': 'documentation',
+  'key': 'credentials',
+  'scroll-text': 'script',
+  'graduation-cap': 'tutorial',
+  'help-circle': 'Q&A',
+  'lightbulb': 'suggestions',
+  'sliders-horizontal': 'config',
+  'folder-kanban': 'general',
+  'briefcase': 'project',
+};
 
 export default function ModalScreen() {
   const router = useRouter();
@@ -17,25 +51,8 @@ export default function ModalScreen() {
 
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'panel' | 'text'>('panel');
-  const [selectedGroup, setSelectedGroup] = useState(ICON_GROUPS[0].id);
-  const [selectedIcon, setSelectedIcon] = useState<string>(() => {
-    // Initialize with first available icon
-    const initialIcons = getIconsForGroupAndType(ICON_GROUPS[0].id, 'panel');
-    return initialIcons.length > 0 ? initialIcons[0] : '';
-  });
+  const [selectedIcon, setSelectedIcon] = useState<string>(AVAILABLE_ICONS[0]);
   const [loading, setLoading] = useState(false);
-
-  // Update selected icon when group or type changes
-  useEffect(() => {
-    const icons = getIconsForGroupAndType(selectedGroup, type);
-    if (icons.length > 0) {
-      // Always set to first icon when group or type changes
-      setSelectedIcon(icons[0]);
-    } else {
-      setSelectedIcon('');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGroup, type]);
 
   const handleCreate = async () => {
     if (!title.trim()) {
@@ -56,7 +73,6 @@ export default function ModalScreen() {
         parent: parentId === 'root' ? '' : parentId,
         style: {
           icon: selectedIcon,
-          iconGroup: selectedGroup,
           x: 0, // Default to 0,0 for now as per plan
           y: 0
         }
@@ -69,8 +85,6 @@ export default function ModalScreen() {
       setLoading(false);
     }
   };
-
-  const availableIcons = getIconsForGroupAndType(selectedGroup, type);
 
   return (
     <View style={styles.container}>
@@ -141,61 +155,35 @@ export default function ModalScreen() {
         </View>
 
         <Text style={styles.label}>Icon</Text>
-        <View style={styles.iconSelectionContainer}>
-          {/* Left side: Icon groups list */}
-          <ScrollView style={styles.groupList} showsVerticalScrollIndicator={false}>
-            {ICON_GROUPS.map((group) => (
+        <ScrollView style={styles.iconGridContainer} showsVerticalScrollIndicator={false}>
+          <View style={styles.iconGrid}>
+            {AVAILABLE_ICONS.map((iconName) => (
               <TouchableOpacity
-                key={group.id}
+                key={iconName}
                 style={[
-                  styles.groupListItem,
-                  selectedGroup === group.id && styles.groupListItemSelected
+                  styles.iconOption,
+                  selectedIcon === iconName && styles.selectedIconOption
                 ]}
-                onPress={() => setSelectedGroup(group.id)}
+                onPress={() => setSelectedIcon(iconName)}
               >
+                <LucideIcon
+                  iconName={iconName}
+                  size={32}
+                  color={selectedIcon === iconName ? SciFiTheme.colors.neonCyan : SciFiTheme.colors.textSecondary}
+                />
                 <Text
                   style={[
-                    styles.groupListText,
-                    selectedGroup === group.id && styles.groupListTextSelected
+                    styles.iconName,
+                    selectedIcon === iconName && styles.iconNameSelected
                   ]}
+                  numberOfLines={1}
                 >
-                  {group.name}
+                  {ICON_DISPLAY_NAMES[iconName] || iconName}
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
-
-          {/* Right side: Icons vertical list */}
-          <ScrollView style={styles.iconsContainer} showsVerticalScrollIndicator={false}>
-            <View style={styles.iconList}>
-              {availableIcons.map((iconName) => (
-                <TouchableOpacity
-                  key={iconName}
-                  style={[
-                    styles.iconOption,
-                    selectedIcon === iconName && styles.selectedIconOption
-                  ]}
-                  onPress={() => setSelectedIcon(iconName)}
-                >
-                  <LucideIcon
-                    iconName={iconName}
-                    size={32}
-                    color={selectedIcon === iconName ? SciFiTheme.colors.neonCyan : SciFiTheme.colors.textSecondary}
-                  />
-                  <Text
-                    style={[
-                      styles.iconName,
-                      selectedIcon === iconName && styles.iconNameSelected
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {iconName}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -285,64 +273,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: SciFiTheme.colors.textPrimary,
   },
-  iconSelectionContainer: {
-    flexDirection: 'row',
-    height: 300,
+  iconGridContainer: {
+    maxHeight: 400,
     marginTop: 8,
-    alignSelf: 'flex-start',
   },
-  groupList: {
-    alignSelf: 'flex-start',
-    borderRightWidth: 1,
-    borderRightColor: SciFiTheme.colors.borderDim,
-    paddingRight: 12,
-    minWidth: 150,
-  },
-  groupListItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-    marginBottom: 4,
-    backgroundColor: SciFiTheme.colors.bgSecondary,
-    borderWidth: 1,
-    borderColor: SciFiTheme.colors.borderDim,
-    alignSelf: 'flex-start',
-  },
-  groupListItemSelected: {
-    backgroundColor: SciFiTheme.colors.bgTertiary,
-    borderColor: SciFiTheme.colors.borderPrimary,
-    ...SciFiTheme.effects.glow,
-  },
-  groupListText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: SciFiTheme.colors.textSecondary,
-    flexShrink: 0,
-  },
-  groupListTextSelected: {
-    color: SciFiTheme.colors.neonCyan,
-    fontWeight: '600',
-  },
-  iconsContainer: {
-    alignSelf: 'flex-start',
-    marginLeft: 12,
-    minWidth: 150,
-  },
-  iconList: {
-    flexDirection: 'column',
-    gap: 8,
+  iconGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
   },
   iconOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    width: 100,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: SciFiTheme.colors.borderDim,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: SciFiTheme.colors.bgSecondary,
-    gap: 12,
-    alignSelf: 'flex-start',
+    gap: 6,
   },
   selectedIconOption: {
     borderColor: SciFiTheme.colors.borderPrimary,
@@ -350,9 +300,9 @@ const styles = StyleSheet.create({
     ...SciFiTheme.effects.glow,
   },
   iconName: {
-    fontSize: 14,
+    fontSize: 11,
     color: SciFiTheme.colors.textSecondary,
-    flexShrink: 0,
+    textAlign: 'center',
   },
   iconNameSelected: {
     color: SciFiTheme.colors.neonCyan,
