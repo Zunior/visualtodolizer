@@ -102,13 +102,34 @@ export default function DraggableNode({
             runOnJS(onPress)(node);
         });
 
+    const dragStartedRef = React.useRef(false);
+    const longPressActiveRef = React.useRef(false);
+
+    // Handler for long press start
+    const handleLongPressStart = () => {
+        longPressActiveRef.current = true;
+        dragStartedRef.current = false;
+    };
+
+    // Handler for long press completion (must be on JS thread to check ref)
+    const handleLongPressComplete = (screenX: number, screenY: number) => {
+        // Only open menu if drag didn't start and long press was active
+        if (longPressActiveRef.current && !dragStartedRef.current) {
+            onLongPress(node, { x: screenX, y: screenY });
+        }
+        longPressActiveRef.current = false;
+    };
+
     const longPress = Gesture.LongPress()
-        .minDuration(500)
+        .minDuration(1000) // 1 second
+        .maxDistance(10) // Allow small movement (10px) during long press
+        .onStart(() => {
+            runOnJS(handleLongPressStart)();
+        })
         .onEnd((event) => {
-            // Calculate screen position: node position + gesture position
             const screenX = startX + event.x;
             const screenY = startY + event.y;
-            runOnJS(onLongPress)(node, { x: screenX, y: screenY });
+            runOnJS(handleLongPressComplete)(screenX, screenY);
         });
 
     const [overlappedCanvasId, setOverlappedCanvasId] = useState<string | null>(null);
@@ -155,8 +176,17 @@ export default function DraggableNode({
         }
     }, [draggingNodePosition, draggingNodeId, hoveringParentBox]);
 
+    // Handler to mark drag as started (must be on JS thread)
+    const markDragStarted = () => {
+        dragStartedRef.current = true;
+        longPressActiveRef.current = false; // Cancel long press when drag starts
+    };
+
     const dragGesture = Gesture.Pan()
+        .minDistance(15) // Require 15px movement before drag activates
         .onStart(() => {
+            // Mark drag as started to cancel long press
+            runOnJS(markDragStarted)();
             isDragging.value = true;
             onDragStart(node.id);
         })
@@ -173,10 +203,22 @@ export default function DraggableNode({
             isDragging.value = false;
             const finalX = startX + event.translationX;
             const finalY = startY + event.translationY;
+            // Reset flags after drag ends
+            runOnJS(() => {
+                dragStartedRef.current = false;
+                longPressActiveRef.current = false;
+            })();
             runOnJS(handleDragEndWithCanvas)(finalX, finalY);
         });
 
-    const composedGesture = Gesture.Race(dragGesture, doubleTap, longPress);
+    // Use Race: double tap wins first
+    // Then use Simultaneous so both long press and drag can be recognized
+    // Long press has maxDistance(10) so small movements won't cancel it
+    // Drag requires minDistance(15) so it only activates on larger movements
+    const composedGesture = Gesture.Race(
+        doubleTap,
+        Gesture.Simultaneous(longPress, dragGesture)
+    );
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
