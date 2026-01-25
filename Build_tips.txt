@@ -1,0 +1,16 @@
+I updated your build scripts to make rebuilds faster:
+npm run build:apk - Fast rebuild (skips prebuild, uses existing Android project)
+npm run build:apk-clean - Full rebuild (runs prebuild --clean, use when you change native config)
+npm run build:apk-debug - Fast debug build
+Why rebuilds are faster:
+Gradle caches compiled code and dependencies
+Only changed files are recompiled
+The Android project structure already exists
+Dependencies are already downloaded
+When to use each:
+Use build:apk for regular rebuilds after code changes (fast)
+Use build:apk-clean only when you:
+Change app.json native configuration
+Add/remove Expo plugins
+Need a completely fresh build
+For most code changes, npm run build:apk should be much faster (2-5 minutes instead of 15-20).
