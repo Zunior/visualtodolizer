@@ -121,6 +121,8 @@ class LucideIcon extends StatelessWidget {
         return LucideIcons.folderKanban;
       case 'briefcase':
         return LucideIcons.briefcase;
+      case 'table':
+        return LucideIcons.table;
       default:
         return null; // Will use fallback circle
     }

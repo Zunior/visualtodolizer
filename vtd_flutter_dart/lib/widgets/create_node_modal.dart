@@ -20,6 +20,7 @@ const List<String> availableIcons = [
   'code-xml',
   'folder-kanban',
   'briefcase',
+  'table',
 ];
 
 // Display names for icons
@@ -38,6 +39,7 @@ const Map<String, String> iconDisplayNames = {
   'code-xml': 'general',
   'folder-kanban': 'general',
   'briefcase': 'project',
+  'table': 'table',
 };
 
 class CreateNodeModal extends StatefulWidget {

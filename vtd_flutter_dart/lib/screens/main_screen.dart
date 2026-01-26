@@ -7,6 +7,7 @@ import '../widgets/root_node_sidebar.dart';
 import '../widgets/child_node_list.dart';
 import '../widgets/folder_view.dart';
 import '../widgets/text_editor.dart';
+import '../widgets/table_editor.dart';
 import '../widgets/create_node_modal.dart';
 import '../widgets/icon_change_modal.dart';
 import '../widgets/node_context_menu.dart';
@@ -374,7 +375,12 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     if (_openedChildNode != null) {
-      if (_openedChildNode!.type == 'panel') {
+      // Check if node has table icon
+      if (_openedChildNode!.style?.icon == 'table') {
+        return TableEditor(
+          nodeId: _openedChildNode!.id,
+        );
+      } else if (_openedChildNode!.type == 'panel') {
         return FolderView(
           parentId: _openedChildNode!.id,
           onNodePress: _handleChildPress,
